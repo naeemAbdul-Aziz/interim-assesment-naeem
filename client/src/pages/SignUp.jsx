@@ -211,7 +211,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/ui/Logo';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { API_BASE } from '../config/api';
 
 /* ════════════════════════════════════════════════════
    Shared dark-page shell
@@ -924,19 +923,13 @@ const SignUp = () => {
 	const handleRegister = async () => {
 		setRegisterError('');
 		try {
-			const res = await fetch(`${API_BASE}/register`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name, email, password }),
-			});
-			const data = await res.json();
-			if (!res.ok) { setRegisterError(data.message || 'Registration failed'); return; }
+			const { data } = await api.post('/auth/register', { name, email, password });
 			setUserId(data.userId);
 			if (data.devOtp) setDevOtp(data.devOtp);
 			saveSession({ step: 2, name, email, userId: data.userId });
 			setStep(2);
-		} catch {
-			setRegisterError('Network error. Please try again.');
+		} catch (error) {
+			setRegisterError(error?.response?.data?.message || 'Network error. Please try again.');
 		}
 	};
 
@@ -944,28 +937,18 @@ const SignUp = () => {
 		setOtpError('');
 		setOtpLoading(true);
 		try {
-			const res = await fetch(`${API_BASE}/api/auth/verify-email`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ userId, otp }),
-			});
-			const data = await res.json();
-			if (!res.ok) { setOtpError(data.message || 'Invalid code'); return; }
+			await api.post('/auth/verify-email', { userId, otp });
 			clearSession();
 			setStep(3);
-		} catch {
-			setOtpError('Network error. Please try again.');
+		} catch (error) {
+			setOtpError(error?.response?.data?.message || 'Network error. Please try again.');
 		} finally {
 			setOtpLoading(false);
 		}
 	};
 
 	const handleResendOtp = async () => {
-		await fetch(`${API_BASE}/api/auth/resend-otp`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ userId }),
-		});
+		await api.post('/auth/resend-otp', { userId });
 	};
 
 	const handleKycComplete = async () => {
