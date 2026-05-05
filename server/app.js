@@ -19,7 +19,12 @@ const { body } = require('express-validator');
 
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+const defaultOrigins = [
+  'http://localhost:5173',
+  'https://naeem-crypto-app.vercel.app',
+];
+
+const allowedOrigins = (process.env.CLIENT_URL || defaultOrigins.join(','))
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean);
