@@ -24,10 +24,11 @@ const defaultOrigins = [
   'https://naeem-crypto-app.vercel.app',
 ];
 
-const allowedOrigins = (process.env.CLIENT_URL || defaultOrigins.join(','))
-  .split(',')
-  .map((o) => o.trim())
-  .filter(Boolean);
+const envOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map((o) => o.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
 
 app.use(cors({
   origin: (origin, callback) => {
